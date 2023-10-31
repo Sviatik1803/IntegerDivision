@@ -1,15 +1,15 @@
-package ua.sviatik.formatters;
+package ua.sviatik.formatters.impl;
 
 
-import ua.sviatik.Result;
-import ua.sviatik.calculator.Step;
+import ua.sviatik.entity.Result;
+import ua.sviatik.entity.Step;
+import ua.sviatik.formatters.Formatter;
 
 public class ClassicFormatter implements Formatter {
     public String format(Result result) {
         int dividendLength = Integer.toString(result.getDividend()).length();
         StringBuilder stringBuilder = new StringBuilder();
         Step firstStep = result.getSteps().get(0);
-
         int spacesAmount = 0;
         for (int i = 0; i < result.getSteps().size(); i++) {
             final int firstNumber = result.getSteps().get(i).getFirstNumber();
@@ -20,27 +20,31 @@ public class ClassicFormatter implements Formatter {
                 writeStep(stringBuilder, spacesAmount, firstNumber, secondNumber);
             }
 
-            if (firstNumber == secondNumber) {
-                spacesAmount += Integer.toString(firstNumber).length() - 1;
-            }
+            spacesAmount = getSpacesAmount(result, spacesAmount, i, secondNumber);
 
-
-            spacesAmount++;
             if (i == result.getSteps().size() - 1) {
-                stringBuilder.append(getSpaces(dividendLength)).append(result.getRemainder());
+                stringBuilder.append(getSpaces(dividendLength - String.valueOf(result.getRemainder()).length() + 1)).append(result.getRemainder());
             }
         }
-
 
         return stringBuilder.toString();
     }
 
+
+    private static int getSpacesAmount(Result result, int spacesAmount, int i, int secondNumber) {
+        if (result.getSteps().get(i).getRemainder() == 0) {
+            spacesAmount += String.valueOf(secondNumber).length();
+        } else {
+            spacesAmount += String.valueOf(secondNumber).length() - String.valueOf(result.getSteps().get(i).getRemainder()).length();
+        }
+        return spacesAmount;
+    }
+
     private static void writeFirstStep(Result result, int dividendLength, StringBuilder stringBuilder, Step firstStep) {
         int dividend = result.getDividend();
-        int divisor = result.getDivisor();
         stringBuilder.append(String.format("_%s|%s%n", dividend, result.getDivisor()));
         stringBuilder.append(String.format("_%s%s|%s%n", firstStep.getSecondNumber(),
-                " ".repeat(dividendLength - String.valueOf(divisor).length()), getDashes(result.getQuotient())));
+                " ".repeat(dividendLength - String.valueOf(firstStep.getSecondNumber()).length()), getDashes(result.getQuotient())));
         stringBuilder.append(String.format(" %s%s|%s%n", getDashes(firstStep.getSecondNumber()), " ".repeat(dividendLength - String.valueOf(firstStep.getSecondNumber()).length()), result.getQuotient()));
     }
 
@@ -54,7 +58,7 @@ public class ClassicFormatter implements Formatter {
         return "-".repeat(Integer.toString(number).length());
     }
 
-    private static String getSpaces(int i) {
-        return " ".repeat(i);
+    private static String getSpaces(int spacesAmount) {
+        return " ".repeat(spacesAmount);
     }
 }

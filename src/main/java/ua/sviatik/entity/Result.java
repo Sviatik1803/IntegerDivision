@@ -1,6 +1,4 @@
-package ua.sviatik;
-
-import ua.sviatik.calculator.Step;
+package ua.sviatik.entity;
 
 import java.util.Collections;
 import java.util.List;
